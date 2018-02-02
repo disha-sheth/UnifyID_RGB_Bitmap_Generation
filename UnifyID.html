@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RGB Bitmap Picture</title>
+</head>
+<body>
+
+<image id='bitmap_image'></image>
+
+<script>
+    fetch('https://www.random.org/integers/?num=10000&min=0&max=10000&col=1&base=10&format=plain&rnd=new')
+        .then((httpResponse) => httpResponse.text())
+        .then(httpResponse => httpResponse.toString())
+        .then(httpResponse => {
+            httpResponse = httpResponse.split('\n');
+            let canvas_width = 128;
+            let canvas_height = 128;
+            let image_buffer = new Uint8ClampedArray(canvas_width * canvas_height * 4);
+            let y = 0;
+            while (y < canvas_height) {
+                let x = 0;
+                while (x < canvas_width) {
+                    let position = 4 * (x + y * canvas_width);
+                    image_buffer[position] = httpResponse[(x * y)%10000] % 255;
+                    image_buffer[position + 1] = (Math.floor(httpResponse[(x * y)%10000] / 2)) % 255;
+                    image_buffer[position + 2] = (Math.floor(httpResponse[(x * y)%10000] / 3)) % 255;
+                    image_buffer[position + 3] = (Math.floor(httpResponse[(x * y)%10000] / 4)) % 255;
+                    ++x;
+                }
+                ++y;
+            }
+            let canvas_element = document.createElement('canvas')
+            let canvasWith2DContext = canvas_element.getContext('2d');
+            canvas_element.width = 128;
+            canvas_element.height = 128;
+            let bitmap_data = canvasWith2DContext.createImageData(canvas_width, canvas_height);
+            bitmap_data.data.set(image_buffer);
+            canvasWith2DContext.putImageData(bitmap_data, 0, 0);
+            document.querySelector('#bitmap_image').src = canvas_element.toDataURL();
+        })
+        .catch(error => {
+            console.log(error)
+        })
+</script>
+
+
+</body>
+</html>
